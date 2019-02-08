@@ -10,80 +10,67 @@ def indices(m,n):
     out[:,:,1] = r1
     return out
 
-img = cv2.imread("C:\\Users\\Yaman\Desktop\\colorFinder\\RBLED1.jpg", 1)
+def findNDraw(img2, sF = 1, color = "red"):
+    # img = cv2.imread(link, 1)
+    img = cv2.resize(img2, (0, 0), fx =sF, fy=sF)
 
-#img = cv2.resize(img, (0, 0), fx =0.15, fy=0.15)
-imgR = np.array(img[:, :, 2])
-imgB = np.array(img[:, :, 0])
+    shp = img.shape
 
-shp = imgR.shape
- 
-ind = ind2 = np.array(indices(shp[0], shp[1]))
+    imgB = np.array(img[:, :, 0])
+    imgR = np.array(img[:, :, 2])
 
-imgCR = np.array(img[:, :, 1] + img[:, :, 0])
-imgCB = np.array(img[:, :, 2] + img[:, :, 1])
+    ind = ind2 = np.array(indices(shp[0], shp[1]))
 
-ind = ind[(imgR > 200) & (imgCR < 30)]
-ind2 = ind2[(imgB > 200) & (imgCB < 30)]
+    imgCR = np.array(img[:, :, 1] + img[:, :, 0])
+    imgCB = np.array(img[:, :, 1] + img[:, :, 2])
 
-# cv2.imshow('Red Light', img)
+    ind = ind[(imgR > 230) & (imgCR < 30)]
 
+    if len(ind) > 10:
+        oXR = int(round(st.median(ind[:, 0])))
+        oYR = int(round(st.median(ind[:, 1])))
+
+        oXR = int(oXR/sF)
+        oYR = int(oYR/sF)
+
+        img2 = cv2.rectangle(img2, (oYR + 50, oXR - 50), (oYR - 50, oXR + 50), (0,0,255), 4)
+
+
+    
+
+    ind2 = ind2[(imgB > 230) & (imgCB < 30)]
+
+    if len(ind2) != 0:
+        oXB = int(round(st.median(ind2[:, 0])))
+        oYB = int(round(st.median(ind2[:, 1])))
+
+        oXB = int(oXB/sF)
+        oYB = int(oYB/sF)
+
+        img2 = cv2.rectangle(img2, (oYB + 50, oXB - 50), (oYB - 50, oXB + 50), (255,0,0), 4)
+    
+
+    return img2
+
+# cv2.imshow("Light", findNDraw("/Users/yamanjandali/Desktop/Projects/colorFinder/redLED2.jpg"))
 # cv2.waitKey(0)
 
-# cv2.imshow('Red Light', img2)
 
-# cv2.waitKey(0)
+cap = cv2.VideoCapture(0)
 
-# (x, y) = np.unravel_index(img2.argmax(), img2.shape)
+while(True):
+    # Capture frame-by-frame
+    ret, frame = cap.read()
 
-# max = img2[x, y]
+    # Our operations on the frame come here
 
-# vals = [np.anywhere((imgC < 250*3) && (imgR > 200))]
+    frame = findNDraw(frame)
 
+    # Display the resulting frame
+    cv2.imshow('frame',frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 
-
-
-oXR = int(round(st.median(ind[:, 0])))
-oYR = int(round(st.median(ind[:, 1])))
-
-oXB = int(round(st.median(ind2[:, 0])))
-oYB = int(round(st.median(ind2[:, 1])))
-
-#print((vals[:, 1]).shape())
-
-#(oX, oY) = np.unravel_index(np.argmax(b, axis=None), b.shape)  # returns a tuple
-
-# for idy, row in enumerate(b):
-#     for idx, el in enumerate(row):
-#         if el == (b[oX, oY]):
-#             x+=idx
-#             y+=idy
-#             counter+=1
-# oX = int(x/counter)
-# oY = int(y/counter)
-
-#print(oX, oY)
-
-
-
-# maxElem = max(imgArray)
-# coords = np.where(imgArray>=maxElem-5)[0]
-
-# x = sum([el[0] for el in coords])
-# y = sum([el[1] for el in coords])
-
-# print(x, y)
-
-# oX = int(img.shape[0]/2)
-# oY = int(img.shape[1]/2)
-
-img = cv2.rectangle(img, (oYR + 50, oXR - 50), (oYR - 50, oXR + 50), (0,0,255), 4)
-
-img = cv2.rectangle(img, (oYB + 50, oXB - 50), (oYB - 50, oXB + 50), (255,0,0), 4)
-
-cv2.imshow('Red Light', img) 
-
-cv2.waitKey(0)
-
-# cv2.imwrite("C:\\Users\\Yaman\Desktop\\pyScripts\\panda2.jpg", img)
-
+# When everything done, release the capture
+cap.release()
+cv2.destroyAllWindows()
